@@ -10,9 +10,9 @@ ArrayTop[2]={i:'3', t:'test3', descr:'this is another test', d:'1994'};
 ArrayTop[3]={i:'4', t:'test4', descr:'this is another test', d:'1995'};
 
 
-function AddNewEvent(id,title,description,date) {
+function AddNewEvent(req) {
 	return new Promise((resolve,reject)=>{
-	newEvent = {i:id, t:title, descr:description, d:date}
+	newEvent = {i:req.params.eventid, t:req.params.title, descr:req.params.description, d:req.params.date}
 	ArrayTop.push(newEvent)
 	if (ArrayTop[ArrayTop.length-1]==newEvent){
 		resolve("Data Added Successfully");
@@ -21,11 +21,11 @@ function AddNewEvent(id,title,description,date) {
 	}
 	})};
 
-function UpdateExistingEvent(id,title,description,date) {
+function UpdateExistingEvent(req) {
 	return new Promise((resolve,reject)=>{
-	newEvent = {i:id, t:title, descr:description, d:date}
+	newEvent = {i:req.params.eventid, t:req.params.title, descr:req.params.description, d:req.params.date}
 	for (let j = 0; j < ArrayTop.length; j++){
-		if (id == ArrayTop[j].i){
+		if (req.param.eventid == ArrayTop[j].i){
 			ArrayTop[j]= newEvent;
 			resolve("Data Update Successfully");
 		}
@@ -39,7 +39,7 @@ app.listen(3000);
 	
 app.route('/Events/:eventid/:title/:description/:date')
 	.put((req,res)=> {
-		AddNewEvent(req.params.eventid,req.params.title,req.params.description,req.params.date)
+		AddNewEvent(req)
 		.then(result =>{
 		res.send(result);
 		})
@@ -49,7 +49,7 @@ app.route('/Events/:eventid/:title/:description/:date')
 		});
 		})
 	.post((req,res)=> {
-		UpdateExistingEvent(req.params.eventid,req.params.title,req.params.description,req.params.date)
+		UpdateExistingEvent(req)
 		.then(result =>{
 		res.send(result);
 		})
