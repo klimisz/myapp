@@ -10,5 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.15.3"
+  },
+  "devDependencies": {
+    "mocha": "^3.4.2",
+	"chai": "*"
+  },
+  "scripts": {
+	"start": "node_modules/.bin/supervisor app",
+	"test": "node_modules/.bin/mocha -w"
   }
 }
