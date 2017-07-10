@@ -42,13 +42,13 @@ function AddNewEvent(req, callback) {
 function SearchEvent(req,callback){
 	let collection = Gdb.collection('MVPTable');
 	try {
-		
 			collection.find({'i': req.params.eventid}).toArray((err,results)=> {
-				if (results.result==null){
-					console.log("Error Finding Event");
-				}else{
+				if (results!=null){
 					console.log("Found The Event");
 					callback(results);
+				}else{
+					console.log("Error Finding Event");
+					callback();
 				}
 			});	
 	}catch(err){
@@ -79,13 +79,15 @@ function UpdateExistingEvent(req,callback) {
 	let collection = Gdb.collection('MVPTable');
 	try {
 		collection.updateOne({'i': req.params.eventid},{'i': req.params.eventid,'t':req.params.title, 'descr':req.params.description, 'd':req.params.date},(err,result)=> {
-		if (result.result.n==1){
-		callback(result);
-		}else{
-			console.log('Error Updating Event');
-			callback();
-		}
-	});
+			if (result.result.n==1){
+				callback(result);
+				console.log('Event Updated Successfully');
+			}else{
+				console.log('Error Updating Event');
+				callback();
+			}
+		});
+	}
 	catch(err){
 		console.log('Error Querying Database');
 		callback();
@@ -109,32 +111,51 @@ app.listen(3000);
 	
 app.route('/Events/:eventid/:title/:description/:date')
 	.put((req,res)=> {
-		AddNewEvent(req,(result,err)=>{
-			console.log('Event Created Successfully');
-			res.send(result);
+		AddNewEvent(req,(results)=>{
+			if (results!=null){
+				res.send(results);
+				console.log('Event Created Successfully');
+			}else{
+				res.send('Error Creating New Event')
+			}
 		})
 	})		
 	.post((req,res)=> {
-		UpdateExistingEvent(req,(err,result)=>{
-			console.log('Event Updated')
-			res.send(result);
+		UpdateExistingEvent(req,(results)=>{
+			if(results!=null){
+				res.send('Event Updated Successfully');
+			}else{
+				res.send('Error Updating Event');
+			}
 		});
 	})
 		
 app.get('/Events' , (req,res) =>{
-	SearchAllEvents((results,err)=>{
-			res.send(results);
+	SearchAllEvents((results)=>{
+			if(results!=null){
+				res.send(results);
+			}else{
+				res.send('Error Finding Events');
+			}
 		})	
 });	
 app.route('/Events/:eventid')
 	.get((req,res) => {
-		SearchEvent(req,(results,err)=>{
-			res.send(results);
+		SearchEvent(req,(results)=>{
+			if(results!=null){
+				res.send(results);
+			}else{
+				res.send('Error Finding Event');
+			}
 		});
 	})
 	
 	.delete((req,res) => {
-		RemoveEvent(req,(result,err)=> {
-			res.send('Event Deleted');
+		RemoveEvent(req,(results)=> {
+			if(results!=null){
+				res.send('Event Deleted');
+			}else{
+				res.send('Error Deleting Event');
+			}
 		});
 	})		
