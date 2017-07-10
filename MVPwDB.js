@@ -6,97 +6,135 @@ const MongoClient = require('mongodb').MongoClient
 	, assert = require('assert');
 const url = 'mongodb://localhost:27017/myapp';
 
+
 let Gdb = null;
 
 MongoClient.connect(url,(err, db)=> {
-  assert.equal(null, err);
-  console.log("Connected successfully to server");
-  Gdb = db;
+  try
+	{
+		assert.equal(null, err);
+		console.log("Connected successfully to server");
+		Gdb = db;
+	}
+	catch(err){
+		console.log('Error Connecting to Database');
+		console.log(err);
+	}
+
 	
 });
 
-function AddNewEvent(req, db, callback) {
-  let collection = db.collection('MVPTable');
-  collection.insert({i:req.params.eventid, t:req.params.title, descr:req.params.description, d:req.params.date}, (err, result)=> {
-    assert.equal(err, null);
-    assert.equal(1, result.result.n);
-    assert.equal(1, result.ops.length);
-    console.log("Inserted 1 Event into the collection");
-    callback(result.ops);
-  });
+function AddNewEvent(req, callback) {
+  let collection = Gdb.collection('MVPTable');
+	try 
+		{
+			collection.insert({i:req.params.eventid, t:req.params.title, descr:req.params.description, d:req.params.date}, (err, result)=> {
+			console.log("Inserted 1 Event into the collection");
+			callback(result.ops);
+			});
+		}
+		catch(err){
+			console.log('Error Inserting Events into the collection');
+			callback();
+		}
 }
 
-function SearchEvent(req,db,callback){
-	let collection = db.collection('MVPTable');
-		collection.find({'i': req.params.eventid}).toArray((err,results)=> {
-			assert.equal(err,null);
-			console.log("Found The Event");
-			callback(results);
-		});
-	};
+function SearchEvent(req,callback){
+	let collection = Gdb.collection('MVPTable');
+	try {
+		
+			collection.find({'i': req.params.eventid}).toArray((err,results)=> {
+				if (results.result==null){
+					console.log("Error Finding Event");
+				}else{
+					console.log("Found The Event");
+					callback(results);
+				}
+			});	
+	}catch(err){
+		console.log('Error Querying Database');
+		callback();
+	}
+};
 
-function RemoveEvent(req,db,callback){
-	let collection = db.collection('MVPTable');
+function RemoveEvent(req,callback){
+	let collection = Gdb.collection('MVPTable');
+	try {
 		collection.remove({'i' : req.params.eventid},true,(err,result)=> {
-			assert.equal(err,null);
-			assert.equal(1,result.result.n);
-			console.log("Event Deleted");
+			if(result.result.n==1){
+			console.log('Event Deleted');
 			callback(result);
+			}else{
+				console.log('Error Deleting Event');
+				callback();
+			}
 		});
+	}
+	catch(err){
+		console.log('Error Querying Database');
+		callback();
+	};
 }	
-
-function UpdateExistingEvent(req,db,callback) {
-	let collection = db.collection('MVPTable');
-	collection.updateOne({'i': req.params.eventid},{'i': req.params.eventid,'t':req.params.title, 'descr':req.params.description, 'd':req.params.date},(err,result)=> {
-		assert.equal(err,null);
-		assert.equal(1, result.result.n);
-		 callback(result);
+function UpdateExistingEvent(req,callback) {
+	let collection = Gdb.collection('MVPTable');
+	try {
+		collection.updateOne({'i': req.params.eventid},{'i': req.params.eventid,'t':req.params.title, 'descr':req.params.description, 'd':req.params.date},(err,result)=> {
+		if (result.result.n==1){
+		callback(result);
+		}else{
+			console.log('Error Updating Event');
+			callback();
+		}
 	});
+	catch(err){
+		console.log('Error Querying Database');
+		callback();
+	}
 }				
 	
-function SearchAllEvents(db,callback){
-	let collection = db.collection('MVPTable');
+function SearchAllEvents(callback){
+	let collection = Gdb.collection('MVPTable');
+	try {
 		collection.find({}).toArray((err,results)=> {
-			assert.equal(err,null);
-			console.log("Found All Events");
-			callback(results);
+		console.log("Found All Events");
+		callback(results);
 		});
-	};
+	}
+	catch(err){
+		console.log('Error Querying Database');
+	}
+};
 	
 app.listen(3000);
 	
 app.route('/Events/:eventid/:title/:description/:date')
 	.put((req,res)=> {
-		AddNewEvent(req,Gdb,(result,err)=>{
+		AddNewEvent(req,(result,err)=>{
 			console.log('Event Created Successfully');
 			res.send(result);
 		})
 	})		
 	.post((req,res)=> {
-		UpdateExistingEvent(req,Gdb,(err,result)=>{
+		UpdateExistingEvent(req,(err,result)=>{
 			console.log('Event Updated')
 			res.send(result);
 		});
 	})
 		
 app.get('/Events' , (req,res) =>{
-	SearchAllEvents(Gdb,(results,err)=>{
+	SearchAllEvents((results,err)=>{
 			res.send(results);
-		})
-	.catch((err)=>{
-		console.log(err);
-		res.send('An Error Occured');
-	})
+		})	
 });	
 app.route('/Events/:eventid')
 	.get((req,res) => {
-		SearchEvent(req,Gdb,(results,err)=>{
+		SearchEvent(req,(results,err)=>{
 			res.send(results);
 		});
 	})
 	
 	.delete((req,res) => {
-		RemoveEvent(req,Gdb,(result,err)=> {
+		RemoveEvent(req,(result,err)=> {
 			res.send('Event Deleted');
 		});
 	})		

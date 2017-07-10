@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'test';
 
 
 let express = require("express");
-let app = require('../MVP');
+let app = require('../MVPwDB');
 
 let chai = require('chai');
 let chaiHttp = require('chai-http');

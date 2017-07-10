@@ -63,6 +63,10 @@ function SpliceEvent(req){
 		})
 	})
 }
+
+
+
+
 app.listen(3000);
 	
 app.route('/Events/:eventid/:title/:description/:date')
