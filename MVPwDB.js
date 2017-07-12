@@ -43,7 +43,7 @@ function SearchEvent(req,callback){
 	let collection = Gdb.collection('MVPTable');
 	try {
 			collection.find({'i': req.params.eventid}).toArray((err,results)=> {
-				if (results!=null){
+				if (results.length>0){
 					console.log("Found The Event");
 					callback(results);
 				}else{
@@ -106,7 +106,25 @@ function SearchAllEvents(callback){
 		console.log('Error Querying Database');
 	}
 };
-	
+
+function SearchEventByTitle(req,callback){
+	let collection = Gdb.collection('MVPTable');
+	try {
+			collection.find({$and: [{'t':req.params.title}, {'t': {$ne: null}}]}).toArray((err,results)=> {
+				if (results.length>0){
+					console.log("Found The Event");
+					callback(results);
+				}else{
+					console.log("Error Finding Event");
+					callback();
+				}
+			});	
+	}catch(err){
+		console.log('Error Querying Database');
+		callback();
+	}
+};
+
 app.listen(3000);
 	
 app.route('/Events/:eventid/:title/:description/:date')
@@ -159,3 +177,14 @@ app.route('/Events/:eventid')
 			}
 		});
 	})		
+
+app.get('/Events/Title/:title',(req,res)=> {
+	SearchEventByTitle(req,(results)=>{
+			if(results!=null){
+				res.send(results);
+			}else{
+				res.send('Error Finding Event');
+			}
+		});
+	})
+	
