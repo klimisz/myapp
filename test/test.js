@@ -8,6 +8,7 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let should = chai.should();
 
+chai.use(require('chai-things'));
 chai.use(chaiHttp);
 
 
@@ -19,7 +20,11 @@ describe('/GET data', () => {
 			.end((err,res) => {
 				res.should.have.status(200);
 				res.body.should.be.a('array');
-				res.body.length.should.be.eql(4);
+				res.body.length.should.be.above(0);
+				res.body.should.include.something.that.have.property('i');
+				res.body.should.include.something.that.have.property('t');
+				res.body.should.include.something.that.have.property('descr');
+				res.body.should.include.something.that.have.property('d');
 				done();
 			});
 		});	
@@ -32,11 +37,11 @@ describe('/GET data', () => {
 			.get('/Events/' + newEvent.i)
 			.end((err,res) => {
 				res.should.have.status(200);
-				res.body.should.be.a('object');
-				res.body.should.have.property('i').eql(newEvent.i);
-				res.body.should.have.property('t');
-				res.body.should.have.property('descr');
-				res.body.should.have.property('d');
+				res.body.should.be.a('array');
+				res.body.should.include.something.that.have.property('i', newEvent.i);
+				res.body.should.include.something.that.have.property('t');
+				res.body.should.include.something.that.have.property('descr');
+				res.body.should.include.something.that.have.property('d');
 				done();
 			});
 	});
@@ -49,11 +54,12 @@ describe('/PUT Event', () => {
 			.put('/Events/' + newEvent.i + "/" + newEvent.t + "/" + newEvent.descr + "/" + newEvent.d)
 			.end((err,res) => {
 				res.should.have.status(200);
-				res.body.should.be.a('object');
-				res.body.should.have.property('i').eql(newEvent.i);
-				res.body.should.have.property('t').eql(newEvent.t);
-				res.body.should.have.property('descr').eql(newEvent.descr);
-				res.body.should.have.property('d').eql(newEvent.d);
+				res.body.should.be.a('array');
+				res.body.should.have.length(1);
+				res.body.should.include.something.that.have.property('i', newEvent.i);
+				res.body.should.include.something.that.have.property('t', newEvent.t);
+				res.body.should.include.something.that.have.property('descr', newEvent.descr);
+				res.body.should.include.something.that.have.property('d', newEvent.d);
 				done();
 			});
 	});
@@ -68,10 +74,7 @@ describe('/POST Event', () => {
 			.end((err,res) => {
 				res.should.have.status(200);
 				res.body.should.be.a('object');
-				res.body.should.have.property('i').eql(newEvent.i);
-				res.body.should.have.property('t').eql(newEvent.t);
-				res.body.should.have.property('descr').eql(newEvent.descr);
-				res.body.should.have.property('d').eql(newEvent.d);
+				res.body.should.have.property('nModified').eql(1);
 				done();
 			});
 	});
@@ -84,6 +87,7 @@ describe('/DELETE Event', () => {
 			.delete('/Events/' + newEvent.i)
 			.end((err,res) => {
 				res.should.have.status(200);
+				res.body.should.have.property('n').to.be.above(0);
 				done();
 			});
 	});

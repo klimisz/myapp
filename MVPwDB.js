@@ -98,6 +98,7 @@ function SearchAllEvents(callback){
 	let collection = Gdb.collection('MVPTable');
 	try {
 		collection.find({}).toArray((err,results)=> {
+		console.log(results);
 		console.log("Found All Events");
 		callback(results);
 		});
@@ -141,7 +142,7 @@ app.route('/Events/:eventid/:title/:description/:date')
 	.post((req,res)=> {
 		UpdateExistingEvent(req,(results)=>{
 			if(results!=null){
-				res.send('Event Updated Successfully');
+				res.send(results);
 			}else{
 				res.send('Error Updating Event');
 			}
@@ -171,7 +172,7 @@ app.route('/Events/:eventid')
 	.delete((req,res) => {
 		RemoveEvent(req,(results)=> {
 			if(results!=null){
-				res.send('Event Deleted');
+				res.send(results);
 			}else{
 				res.send('Error Deleting Event');
 			}
